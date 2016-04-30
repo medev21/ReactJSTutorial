@@ -24,7 +24,7 @@ var App = React.createClass({
     return (
       <div>
         <TodoForm onTodoAdd={this.handleTodoAdd}/>
-        <TodoList todos={this.state.todos}/>
+        <TodoList todos={this.state.todos} deleteTodo={this.handleTodoDelete}/>
       </div>
     )
   },
@@ -38,6 +38,19 @@ var App = React.createClass({
 
     //send the newTodo object to the state, concat it's very important
     this.setState({todos: this.state.todos.concat(newTodo)});
+  },
+
+  handleTodoDelete: function(todo){
+    // console.log(todo);
+    var todos = this.state.todos;
+
+    for(var i=0; i < todos.length; i++){
+      if(todos[i].id == todo.id){ //if todo.id is equal to the pass todo
+        todos.splice(i, 1); //remove the todo
+      }
+    }
+
+    this.setState({todos: todos}); //set the state, don't forget about it
   }
 });
 
@@ -84,12 +97,18 @@ var TodoList = React.createClass({
             //todo={todo} key={todo.id}
             //todo={todo} this build the object in todo var
             // key={todo.id}, this set the todo.id in key var
-            return <li className="list-group-item" todo={todo} key={todo.id}>{todo.text}</li>
+            return <li className="list-group-item" todo={todo} key={todo.id}>{todo.text}
+            <a onClick={this.onDelete.bind(this, todo)} href="#" className="btn btn-danger">x</a></li>
           })
         }
       </ul>
     )
   },
+
+  onDelete: function(todo){
+    // console.log(todo);
+    this.props.deleteTodo(todo);
+  }
 });
 ReactDOM.render(<App />, document.getElementById("app"));
 
