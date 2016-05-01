@@ -3,6 +3,7 @@ var App = React.createClass({
   getInitialState: function(){
     return {
       text: '',
+      isEdit: 0,
       todos: [
         {
           id: 1,
@@ -23,8 +24,18 @@ var App = React.createClass({
   render: function(){
     return (
       <div>
-        <TodoForm onTodoAdd={this.handleTodoAdd}/>
-        <TodoList todos={this.state.todos} deleteTodo={this.handleTodoDelete}/>
+        <TodoForm
+        {...this.state}
+        changeText={this.handleChangeText}
+        onTodoUpdate = {this.handleTodoUpdate}
+        onTodoAdd={this.handleTodoAdd}/>
+
+        <TodoList
+        {...this.state}
+        todos={this.state.todos}
+        deleteTodo={this.handleTodoDelete}
+        editTodo={this.handleTodoEdit}/>
+
       </div>
     )
   },
@@ -51,6 +62,31 @@ var App = React.createClass({
     }
 
     this.setState({todos: todos}); //set the state, don't forget about it
+  },
+
+  handleTodoEdit: function(todo){
+    this.setState({
+      text: todo.text,
+      isEdit: todo.id
+    })
+  },
+
+  handleChangeText: function(text){
+    this.setState({
+      text: text
+    });
+  },
+
+  handleTodoUpdate: function(todo){
+    var todos = this.state.todos;
+    for(var i=0; i < todos.length; i++){
+      if(todos[i].id == todo.id){
+        todos.splice(i, 1);
+      }
+    }
+
+    todos.push(todo);
+    this.setState({todos: todos})
   }
 });
 
@@ -61,7 +97,7 @@ var TodoForm = React.createClass({
         <form onSubmit={this.onSubmit}>
           <div className="form-group">
             <label>Todo text</label>
-            <input type="text" ref="text" onChange={this.onChange} className="form-control"/>
+            <input type="text" ref="text" value={this.props.text} onChange={this.onChange} className="form-control"/>
           </div>
         </form>
       </div>
@@ -69,7 +105,8 @@ var TodoForm = React.createClass({
   },
 
   onChange: function(){
-    console.log('changing text');
+    // console.log('changing text');
+    this.props.changeText(e.target.value);
   },
 
   onSubmit: function(e){
@@ -82,7 +119,19 @@ var TodoForm = React.createClass({
       return;
     }
 
-    this.props.onTodoAdd(text); //this sends text on a function to do form
+    if(this.props.isEdit){
+      // console.log('is updated');
+      var updatedTodo ={
+        id: this.props.isEdit,
+        text: text
+      }
+
+      this.props.onTodoUpdate(updatedTodo);
+    }else{
+      this.props.onTodoAdd(text); //this sends text on a function to do form
+
+    }
+
 
     this.refs.text.value = ''; //set clear the input field
   }
@@ -97,7 +146,7 @@ var TodoList = React.createClass({
             //todo={todo} key={todo.id}
             //todo={todo} this build the object in todo var
             // key={todo.id}, this set the todo.id in key var
-            return <li className="list-group-item" todo={todo} key={todo.id}>{todo.text}
+            return <li className="list-group-item" todo={todo} key={todo.id}><span onClick={this.editTodo.bind(this, todo)}>{todo.text}</span>
             <a onClick={this.onDelete.bind(this, todo)} href="#" className="btn btn-danger">x</a></li>
           })
         }
@@ -108,6 +157,10 @@ var TodoList = React.createClass({
   onDelete: function(todo){
     // console.log(todo);
     this.props.deleteTodo(todo);
+  },
+
+  editTodo: function(todo){
+    this.props.editTodo(todo);
   }
 });
 ReactDOM.render(<App />, document.getElementById("app"));
