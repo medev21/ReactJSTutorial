@@ -21,6 +21,24 @@ var App = React.createClass({
     }
   },
 
+  componentWillMount: function(){
+    this.firebaseRef = new Firebase('https://todoappinreact.firebaseio.com/todos');
+    var that = this;
+    this.firebaseRef.once("value", function(snapshot){
+      var todos = [];
+      snapshot.forEach(function(data){
+        // console.log(data.val());
+        var todo = {
+          id: data.val().id,
+          text: data.val().text
+        }
+
+        todos.push(todo);
+        that.setState({todos: todos});
+      });
+    });
+  },
+
   render: function(){
     return (
       <div>
@@ -46,6 +64,8 @@ var App = React.createClass({
       id: this.state.todos.length + 1, //get current length and add one for new id
       text: text  //add text
     }//create newTodo object
+
+    this.firebaseRef.push(newTodo);
 
     //send the newTodo object to the state, concat it's very important
     this.setState({todos: this.state.todos.concat(newTodo)});
